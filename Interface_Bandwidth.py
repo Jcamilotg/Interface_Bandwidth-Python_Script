@@ -6,13 +6,72 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from collections import deque
 from datetime import datetime
+import matplotlib.lines as mlines
+import os
+
+
+
+
+print('''
+    Seleccione Interfaz o Estandar a Validar:
+
+    [1] Wi-Fi 2.4GHz
+    [2] Wi-Fi 5GHz 
+    [3] Wi-Fi 6GHz
+    [4] Wi-Fi 7
+    [5] Ethernet 1 Gbps
+    [6] Ethernet 2.5 Gbps
+    [7] Ethernet 5 Gbps
+    [8] Ethernet 10 Gbps
+''')
+velocidad = float(input("Ingrese la opción deseada: \t"))
+
+try:
+
+    if velocidad == 1:
+        interface = 0.4
+        hilos = 10
+        print("[1] Wi-Fi 2.4GHz")
+    if velocidad == 2:
+        interface = 2
+        hilos = 10
+        print("[2] Wi-Fi 5GHz")
+    if velocidad == 3:
+        interface = 3
+        hilos = 10
+        print("[3] Wi-Fi 6GHz")
+    if velocidad == 4:
+        interface = 7
+        hilos = 10
+        print("[4] Wi-Fi 7")
+    if velocidad == 5:
+        interface = 1
+        hilos = 10
+        print("[5] Ethernet 1 Gbps")
+    if velocidad == 6:
+        interface = 2.5
+        hilos = 10
+        print("[6] Ethernet 2.5 Gbps")
+    if velocidad == 7:
+        interface = 5
+        hilos = 10
+        print("[7] Ethernet 5 Gbps")
+    if velocidad == 8:
+        interface = 10
+        hilos = 10
+        print("[8] Ethernet 10 Gbps")
+
+except:
+    print("Error")
+    os.system("python3 Interface_Bandwidth.py")
+
 
 # Configuración
 DEST_IP = "192.168.75.254"
 PORT = 5001  # Puerto de destino
 PACKET_SIZE = 65000  # Tamaño del paquete UDP (65 KB)
 DURATION = 10  # Duración en segundos
-NUM_THREADS = 10  # Cantidad de hilos para saturar la red
+NUM_THREADS = hilos  # Cantidad de hilos para saturar la red
 
 nombre_archivo = input("\nIngrese Nombre del archivo Log a guardar: \t")
 Numerotest = int(input("\nIngrese número de pruebas, si quiere infinitos agregue '0': \t"))
@@ -98,6 +157,7 @@ def medir_ancho_banda():
 
     # Calcular ancho de banda total sumando lo de todos los hilos
     total_bandwidth = sum(results)
+    print(f"{total_bandwidth:.2f} Mbps")
 
     # 🔹 **Filtrar solo valores numéricos (descartar "Falla")**
     mediciones_validas = [b for b in bandwidths if isinstance(b, (int, float))]
@@ -112,7 +172,7 @@ def medir_ancho_banda():
 
 
         # **🔹 Mostrar estado correcto**
-    if total_bandwidth < 1 or total_bandwidth > 1.3 * promedio_anterior or total_bandwidth > 10000:
+    if total_bandwidth < 1 or total_bandwidth > 2 * promedio_anterior or total_bandwidth > int(1000 * float(f"{interface}")):
         print("\n❌ Falla detectada: No se envió tráfico o la interfaz está desconectada.")
         total_bandwidth = "Falla"  # Marcar como fallo en el CSV
     else:
@@ -138,6 +198,11 @@ def update(frame):
     ax.clear()
     ax.axhline(y=0, color="red", linestyle="--", linewidth=1.5, label="0 Mbps")
 
+    # Convertir fallas en 0 y calcular el promedio correctamente
+    valores_numericos = [b if isinstance(b, (int, float)) else 0 for b in bandwidths]
+    total_pruebas = len(bandwidths)  # Contar TODAS las pruebas (válidas y fallas)
+    promedio_total = sum(valores_numericos) / total_pruebas if total_pruebas > 0 else 0
+
     line, = ax.plot(times, [b if isinstance(b, (int, float)) else 0 for b in bandwidths],
                     marker="o", linestyle="-", color="b", label="Ancho de Banda (Mbps)")
 
@@ -154,18 +219,27 @@ def update(frame):
         if isinstance(bw, str) and bw == "Falla":
             ax.text(t, 1, "Falla", fontsize=10, color="red", ha="center", va="bottom", rotation=90, fontweight='bold')
         else:
-            ax.text(t, bw + (max_bw * 0.05), f"{bw:.2f} Mbps", fontsize=10, color="green", ha="center", va="bottom",
-                    rotation=90)
+            ax.text(t, bw + (max_bw * 0.05), f"{bw:.2f} Mbps", fontsize=10, color="green", ha="center", va="bottom", rotation=90)
+        # 🔹 **Leyenda mejorada**
+        # Crear handles para las pruebas válidas
+    valid_handles = [mlines.Line2D([], [], color="white", marker="o", markersize=8, label=f"Prueba {i + 1}: {bw:.2f} Mbps")
+                    for i, bw in enumerate(bandwidths) if isinstance(bw, (int, float))]
+
+    # Crear handles para las fallas (rojo)
+    fail_handles = [mlines.Line2D([], [], color="red", marker="o", markersize=8, label=f"Prueba {i + 1}: Falla")
+                    for i, bw in enumerate(bandwidths) if isinstance(bw, str) and bw == "Falla"]
+
+    # Agregar ambas partes a la leyenda
+    ax.legend(handles=[line] + valid_handles[-5:] + fail_handles[-5:], loc="upper left", fontsize=10,
+              title="Historial de Mediciones")
 
     # 🔹 **Actualizar la leyenda con los valores recientes**
-    legend_labels = [f"Prueba {i + 1}: {'Falla' if isinstance(bw, str) else f'{bw:.2f} Mbps'}" for i, bw in
-                     enumerate(bandwidths)]
+    #legend_labels = [f"Prueba {i + 1}: {'Falla' if isinstance(bw, str) else f'{bw:.2f} Mbps'}" for i, bw in enumerate(bandwidths)]
 
     # Últimos 5 elementos en la leyenda
-    legend_proxies = [plt.Line2D([0], [0], color="white", marker="o", markersize=8, label=label) for label in
-                      legend_labels[-200:]]
+    #legend_proxies = [plt.Line2D([0], [0], color="white", marker="o", markersize=8, label=label) for label in legend_labels[-200:]]
 
-    ax.legend(handles=[line] + legend_proxies, loc="upper left", fontsize=10, title="Historial de Mediciones")
+    #ax.legend(handles=[line] + legend_proxies, loc="upper left", fontsize=10, title="Historial de Mediciones")
     # 🔹 **Ajustar el espacio de la gráfica**
     plt.subplots_adjust(left=0.05, right=0.95, top=0.90, bottom=0.15)  # Reduce márgenes generales
 
@@ -174,7 +248,7 @@ def update(frame):
         ax.set_xlim(times[0], times[-1])
 
     ax.set_title(f"Medición de Ancho de Banda - Nombre: {nombre_archivo} | Nro de Pruebas: {Numerotest}", fontsize=14, color="red")
-    ax.set_xlabel(f"Tiempo | Prueba Nro: {pruebas} | Estado: {'En progreso' if pruebas < Numerotest else 'Finalizado'}",
+    ax.set_xlabel(f"Tiempo | Prueba Nro: {pruebas} | Estado: {'En progreso' if pruebas < Numerotest else 'Finalizado'} | Promedio: {promedio_total:.2f} Mbps",
                   fontsize=15, color="red")
     ax.set_ylabel("Ancho de Banda (Mbps)", fontsize=12)
     ax.grid(True)
