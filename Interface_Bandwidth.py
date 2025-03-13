@@ -89,7 +89,7 @@ if not open(CSV_FILE, "a").tell():
         writer.writerow(["Fecha", "Hora", "Ancho de Banda (Mbps)"])  # Encabezados
 
 # Configuración de la gráfica
-MAX_POINTS = 100  # Máximo de puntos en la gráfica
+MAX_POINTS = 300  # Máximo de puntos en la gráfica
 times = deque(maxlen=MAX_POINTS)  # Almacena tiempos
 bandwidths = deque(maxlen=MAX_POINTS)  # Almacena mediciones
 
@@ -164,7 +164,7 @@ def medir_ancho_banda():
 
     #mediciones.append(total_bandwidth)
     # 🔹 **Cálculo del promedio de las mediciones anteriores**
-    if len(mediciones_validas) > 3:  # Asegurar que haya suficiente historial
+    if len(mediciones_validas) > 4:  # Asegurar que haya suficiente historial
         promedio_anterior = sum(mediciones_validas) / len(mediciones_validas)
     else:
         promedio_anterior = total_bandwidth  # Evita dividir por 0 en las primeras pruebas
@@ -230,7 +230,7 @@ def update(frame):
                     for i, bw in enumerate(bandwidths) if isinstance(bw, str) and bw == "Falla"]
 
     # Agregar ambas partes a la leyenda
-    ax.legend(handles=[line] + valid_handles[-5:] + fail_handles[-5:], loc="upper left", fontsize=10,
+    ax.legend(handles=[line] + valid_handles[-20:] + fail_handles[-50:], loc="upper left", fontsize=10,
               title="Historial de Mediciones")
 
     # 🔹 **Actualizar la leyenda con los valores recientes**
