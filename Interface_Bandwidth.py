@@ -230,7 +230,7 @@ def update(frame):
                     for i, bw in enumerate(bandwidths) if isinstance(bw, str) and bw == "Falla"]
 
     # Agregar ambas partes a la leyenda
-    ax.legend(handles=[line] + valid_handles[-20:] + fail_handles[-50:], loc="upper left", fontsize=10,
+    ax.legend(handles=[line] + valid_handles[-5:] + fail_handles[-30:], loc="upper left", fontsize=10,
               title="Historial de Mediciones")
 
     # 🔹 **Actualizar la leyenda con los valores recientes**
