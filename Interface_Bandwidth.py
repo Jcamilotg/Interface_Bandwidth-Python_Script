@@ -30,35 +30,27 @@ try:
 
     if velocidad == 1:
         interface = 0.4
-        hilos = 10
         print("[1] Wi-Fi 2.4GHz")
     if velocidad == 2:
         interface = 2
-        hilos = 10
         print("[2] Wi-Fi 5GHz")
     if velocidad == 3:
         interface = 3
-        hilos = 10
         print("[3] Wi-Fi 6GHz")
     if velocidad == 4:
         interface = 7
-        hilos = 10
         print("[4] Wi-Fi 7")
     if velocidad == 5:
         interface = 1
-        hilos = 10
         print("[5] Ethernet 1 Gbps")
     if velocidad == 6:
         interface = 2.5
-        hilos = 10
         print("[6] Ethernet 2.5 Gbps")
     if velocidad == 7:
         interface = 5
-        hilos = 10
         print("[7] Ethernet 5 Gbps")
     if velocidad == 8:
         interface = 10
-        hilos = 10
         print("[8] Ethernet 10 Gbps")
 
 except:
@@ -71,7 +63,7 @@ DEST_IP = "192.168.75.254"
 PORT = 5001  # Puerto de destino
 PACKET_SIZE = 65000  # Tamaño del paquete UDP (65 KB)
 DURATION = 10  # Duración en segundos
-NUM_THREADS = hilos  # Cantidad de hilos para saturar la red
+NUM_THREADS = 10  # Cantidad de hilos para saturar la red
 
 nombre_archivo = input("\nIngrese Nombre del archivo Log a guardar: \t")
 Numerotest = int(input("\nIngrese número de pruebas, si quiere infinitos agregue '0': \t"))
@@ -89,7 +81,7 @@ if not open(CSV_FILE, "a").tell():
         writer.writerow(["Fecha", "Hora", "Ancho de Banda (Mbps)"])  # Encabezados
 
 # Configuración de la gráfica
-MAX_POINTS = 300  # Máximo de puntos en la gráfica
+MAX_POINTS = 5000  # Máximo de puntos en la gráfica
 times = deque(maxlen=MAX_POINTS)  # Almacena tiempos
 bandwidths = deque(maxlen=MAX_POINTS)  # Almacena mediciones
 
@@ -132,11 +124,13 @@ def enviar_paquetes(thread_id, result_list):
     else:
         result_list[thread_id] = bandwidth_mbps  # 🔹 Guardar el resultado válido
 
+num_fallas = 0
 def medir_ancho_banda():
     """
     Crea múltiples hilos para enviar tráfico UDP simultáneamente.
     """
     global pruebas
+    global num_fallas
     if Numerotest != 0 and pruebas >= Numerotest:
         print("\n🚀 Pruebas finalizadas. Saliendo...")
         return
@@ -175,6 +169,7 @@ def medir_ancho_banda():
     if total_bandwidth < 1 or total_bandwidth > 2 * promedio_anterior or total_bandwidth > int(1000 * float(f"{interface}")):
         print("\n❌ Falla detectada: No se envió tráfico o la interfaz está desconectada.")
         total_bandwidth = "Falla"  # Marcar como fallo en el CSV
+        num_fallas += 1
     else:
         print(f"\n📊 Resultados:")
         print(f"📤 Ancho de banda total medido: {total_bandwidth:.2f} Mbps")
@@ -247,8 +242,8 @@ def update(frame):
     if len(times) > 1:
         ax.set_xlim(times[0], times[-1])
 
-    ax.set_title(f"Medición de Ancho de Banda - Nombre: {nombre_archivo} | Nro de Pruebas: {Numerotest}", fontsize=14, color="red")
-    ax.set_xlabel(f"Tiempo | Prueba Nro: {pruebas} | Estado: {'En progreso' if pruebas < Numerotest else 'Finalizado'} | Promedio: {promedio_total:.2f} Mbps",
+    ax.set_title(f"Medición de Ancho de Banda - Nombre: {nombre_archivo} | Nro de Pruebas: {Numerotest} | Nro Fallas: {num_fallas}", fontsize=14, color="red")
+    ax.set_xlabel(f"Tiempo | Prueba Nro: {pruebas} | Estado: {'En progreso' if pruebas < Numerotest else 'Finalizado'} | Velocidad Promedio: {promedio_total:.2f} Mbps",
                   fontsize=15, color="red")
     ax.set_ylabel("Ancho de Banda (Mbps)", fontsize=12)
     ax.grid(True)
