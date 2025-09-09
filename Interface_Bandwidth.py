@@ -88,7 +88,7 @@ bandwidths = deque(maxlen=MAX_POINTS)  # Almacena mediciones
 #sinconizar hilos para que envien al mismo tiempo
 BARRIER = threading.Barrier(NUM_THREADS)
 def enviar_paquetes(thread_id, result_list):
-    time.sleep(20)
+    time.sleep(5)
     """
     Función para enviar paquetes UDP desde un hilo.
     """
