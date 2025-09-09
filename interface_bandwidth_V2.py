@@ -78,8 +78,8 @@ except Exception as e:
 DEST_IP = "192.168.75.254"
 PORT = 5001
 PACKET_SIZE = 65000    # 65 KB
-DURATION = 10          # segundos por prueba
-NUM_THREADS = 15       # hilos concurrentes para generar carga
+DURATION = 15          # segundos por prueba
+NUM_THREADS = 10       # hilos concurrentes para generar carga
 
 nombre_archivo = input("\nIngrese Nombre del archivo Log a guardar: \t").strip() or "pruebas"
 try:

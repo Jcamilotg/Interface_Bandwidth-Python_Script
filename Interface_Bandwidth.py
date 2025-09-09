@@ -62,7 +62,7 @@ except:
 DEST_IP = "192.168.75.254"
 PORT = 5001  # Puerto de destino
 PACKET_SIZE = 65000  # Tamaño del paquete UDP (65 KB)
-DURATION = 10  # Duración en segundos
+DURATION = 15  # Duración en segundos
 NUM_THREADS = 10  # Cantidad de hilos para saturar la red
 
 nombre_archivo = input("\nIngrese Nombre del archivo Log a guardar: \t")
@@ -158,7 +158,7 @@ def medir_ancho_banda():
 
     #mediciones.append(total_bandwidth)
     # 🔹 **Cálculo del promedio de las mediciones anteriores**
-    if len(mediciones_validas) > 4:  # Asegurar que haya suficiente historial
+    if len(mediciones_validas) > 20:  # Asegurar que haya suficiente historial
         promedio_anterior = sum(mediciones_validas) / len(mediciones_validas)
     else:
         promedio_anterior = total_bandwidth  # Evita dividir por 0 en las primeras pruebas
